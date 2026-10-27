@@ -1,0 +1,131 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ── User ─────────────────────────────────────────────────────────────────────
+
+model User {
+  id                   String    @id @default(cuid())
+  email                String    @unique
+  passwordHash         String
+  name                 String
+  refreshTokenHash     String?
+  mailchimpApiKeyEnc   String?
+  mailchimpLastSyncAt  DateTime?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  campaigns  Campaign[]
+  insights   AIInsight[]
+
+  @@map("users")
+}
+
+// ── Campaign ──────────────────────────────────────────────────────────────────
+
+enum CampaignSource {
+  CSV
+  MAILCHIMP
+}
+
+model Campaign {
+  id               String         @id @default(cuid())
+  userId           String
+  name             String
+  subject          String?
+  sentAt           DateTime?
+  source           CampaignSource
+  externalId       String?
+  totalRecipients  Int            @default(0)
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  user     User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  metrics  CampaignMetrics?
+  events   EmailEvent[]
+  segments AudienceSegment[]
+  insights AIInsight[]
+
+  @@unique([userId, externalId])
+  @@map("campaigns")
+}
+
+// ── CampaignMetrics ───────────────────────────────────────────────────────────
+
+model CampaignMetrics {
+  id              String  @id @default(cuid())
+  campaignId      String  @unique
+  opens           Int     @default(0)
+  uniqueOpens     Int     @default(0)
+  clicks          Int     @default(0)
+  uniqueClicks    Int     @default(0)
+  bounces         Int     @default(0)
+  unsubscribes    Int     @default(0)
+  complaints      Int     @default(0)
+  deliveries      Int     @default(0)
+
+  campaign Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@map("campaign_metrics")
+}
+
+// ── EmailEvent ────────────────────────────────────────────────────────────────
+
+enum EmailEventType {
+  OPEN
+  CLICK
+  BOUNCE
+  UNSUB
+}
+
+model EmailEvent {
+  id             String         @id @default(cuid())
+  campaignId     String
+  eventType      EmailEventType
+  timestamp      DateTime
+  recipientEmail String?
+  metadata       Json?
+  createdAt      DateTime       @default(now())
+
+  campaign Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@index([campaignId, eventType])
+  @@map("email_events")
+}
+
+// ── AudienceSegment ───────────────────────────────────────────────────────────
+
+model AudienceSegment {
+  id             String  @id @default(cuid())
+  campaignId     String
+  segmentName    String
+  recipientCount Int     @default(0)
+  openRate       Float   @default(0)
+  clickRate      Float   @default(0)
+
+  campaign Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@map("audience_segments")
+}
+
+// ── AIInsight ─────────────────────────────────────────────────────────────────
+
+model AIInsight {
+  id         String   @id @default(cuid())
+  campaignId String
+  userId     String
+  prompt     String   @db.Text
+  response   Json
+  createdAt  DateTime @default(now())
+
+  campaign Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([campaignId])
+  @@map("ai_insights")
+}

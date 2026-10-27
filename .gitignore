@@ -1,0 +1,64 @@
+﻿# ─── Dependencies ────────────────────────────────────────────────────────────
+node_modules/
+.pnp
+.pnp.js
+
+# ─── Build output ────────────────────────────────────────────────────────────
+dist/
+build/
+out/
+.vite/
+client/.vite/
+
+# ─── Environment / Secrets ───────────────────────────────────────────────────
+# Never commit real secrets — use .env.example instead
+.env
+.env.local
+.env.*.local
+*.env.local
+
+# ─── Logs ────────────────────────────────────────────────────────────────────
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+logs/
+
+# ─── Test / Coverage ─────────────────────────────────────────────────────────
+coverage/
+*.lcov
+.nyc_output/
+
+# ─── Prisma ──────────────────────────────────────────────────────────────────
+# SQLite dev databases sometimes created alongside migrations
+server/prisma/migrations/*.db
+server/prisma/dev.db
+server/prisma/dev.db-journal
+
+# ─── OS / Editor ─────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+Desktop.ini
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+.idea/
+.vscode/settings.json
+*.swp
+*.swo
+*~
+
+# ─── Docker ──────────────────────────────────────────────────────────────────
+# Keep docker-compose.yml committed; ignore local override
+docker-compose.override.yml
+
+# ─── Misc ────────────────────────────────────────────────────────────────────
+.cache/
+tmp/
+temp/
+
+start.bat
+stop.bat
